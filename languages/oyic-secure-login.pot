@@ -1,0 +1,263 @@
+# Copyright (C) 2024 OYIC Team
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: OYIC Secure Login 1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/oyic/oyic-secure-login/issues\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-01-01T00:00:00+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.8.1\n"
+"X-Domain: oyic-secure-login\n"
+
+#. Plugin Name of the plugin
+msgid "OYIC Secure Login"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://github.com/oyic/oyic-secure-login"
+msgstr ""
+
+#. Description of the plugin
+msgid "Enhanced WordPress security with custom login URLs and email OTP authentication. Protect your site from brute force attacks and unauthorized access."
+msgstr ""
+
+#. Author of the plugin
+msgid "OYIC Team"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://oyic.com"
+msgstr ""
+
+#: oyic-secure-login.php:35
+msgid "OYIC Secure Login requires PHP %2$s or higher. You are running PHP %1$s."
+msgstr ""
+
+#: oyic-secure-login.php:48
+msgid "OYIC Secure Login requires WordPress %2$s or higher. You are running WordPress %1$s."
+msgstr ""
+
+#: oyic-secure-login.php:196
+msgid "OYIC Secure Login initialization failed: %s"
+msgstr ""
+
+#: src/Admin/Manager.php:45
+msgid "OYIC Secure Login Settings"
+msgstr ""
+
+#: src/Admin/Manager.php:46
+msgid "Secure Login"
+msgstr ""
+
+#: src/Admin/Manager.php:58
+msgid "General Settings"
+msgstr ""
+
+#: src/Admin/Manager.php:65
+msgid "Enable Custom Login URL"
+msgstr ""
+
+#: src/Admin/Manager.php:73
+msgid "Custom Login Slug"
+msgstr ""
+
+#: src/Admin/Manager.php:81
+msgid "Enable Email OTP Login"
+msgstr ""
+
+#: src/Admin/Manager.php:89
+msgid "Override Key"
+msgstr ""
+
+#: src/Admin/Manager.php:97
+msgid "OTP Settings"
+msgstr ""
+
+#: src/Admin/Manager.php:104
+msgid "OTP Expiry Time (minutes)"
+msgstr ""
+
+#: src/Admin/Manager.php:112
+msgid "Rate Limit Attempts"
+msgstr ""
+
+#: src/Admin/Manager.php:120
+msgid "Rate Limit Window (minutes)"
+msgstr ""
+
+#: src/Admin/Manager.php:145
+msgid "Block access to wp-login.php and redirect to custom URL"
+msgstr ""
+
+#: src/Admin/Manager.php:156
+msgid "Custom slug for login URL (letters, numbers, hyphens only)"
+msgstr ""
+
+#: src/Admin/Manager.php:167
+msgid "Allow users to login using email OTP (One-Time Password)"
+msgstr ""
+
+#: src/Admin/Manager.php:178
+msgid "Secret key to access original wp-login.php"
+msgstr ""
+
+#: src/Admin/Manager.php:189
+msgid "How long OTP codes remain valid (1-60 minutes)"
+msgstr ""
+
+#: src/Admin/Manager.php:200
+msgid "Maximum OTP requests per time window (1-10 attempts)"
+msgstr ""
+
+#: src/Admin/Manager.php:211
+msgid "Time window for rate limiting (1-60 minutes)"
+msgstr ""
+
+#: src/Auth/OTP.php:89
+msgid "Your login code for %s"
+msgstr ""
+
+#: src/Auth/OTP.php:95
+msgid "Your secure login code is: %s"
+msgstr ""
+
+#: src/Auth/OTP.php:96
+msgid "This code will expire in %d minutes."
+msgstr ""
+
+#: src/Auth/OTP.php:97
+msgid "If you didn't request this code, please ignore this email."
+msgstr ""
+
+#: src/Auth/OTP.php:156
+msgid "Invalid email address"
+msgstr ""
+
+#: src/Auth/OTP.php:161
+msgid "User not found"
+msgstr ""
+
+#: src/Auth/OTP.php:166
+msgid "Too many requests. Please wait before requesting another OTP."
+msgstr ""
+
+#: src/Auth/OTP.php:174
+msgid "Failed to send OTP email"
+msgstr ""
+
+#: src/Auth/OTP.php:177
+msgid "OTP sent successfully"
+msgstr ""
+
+#: src/Auth/OTP.php:189
+msgid "Invalid OTP code format"
+msgstr ""
+
+#: src/Auth/OTP.php:194
+msgid "Invalid or expired OTP code"
+msgstr ""
+
+#: src/Auth/OTP.php:197
+msgid "OTP verified successfully"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:89
+msgid "Login"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:95
+msgid "Invalid username or password. Please try again."
+msgstr ""
+
+#: src/Frontend/LoginPage.php:101
+msgid "Invalid or expired OTP code. Please try again."
+msgstr ""
+
+#: src/Frontend/LoginPage.php:107
+msgid "Too many failed attempts. Please try again later."
+msgstr ""
+
+#: src/Frontend/LoginPage.php:120
+msgid "Username/Password"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:125
+msgid "Email OTP"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:138
+msgid "Username or Email"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:143
+msgid "Password"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:148
+msgid "Remember Me"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:152
+msgid "Log In"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:162
+msgid "Email Address"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:167
+msgid "Send OTP Code"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:177
+msgid "Enter 6-digit code sent to your email"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:182
+msgid "Verify & Login"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:183
+msgid "Back"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:187
+msgid "Code expires in"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:188
+msgid "Resend code"
+msgstr ""
+
+#: src/Frontend/LoginPage.php:194
+msgid "Back to %s"
+msgstr ""
+
+#: includes/functions.php:168
+msgid "%d second ago"
+msgid_plural "%d seconds ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/functions.php:172
+msgid "%d minute ago"
+msgid_plural "%d minutes ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/functions.php:176
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/functions.php:180
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] ""
+msgstr[1] ""
