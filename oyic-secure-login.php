@@ -157,16 +157,19 @@ final class OYIC_Secure_Login {
                 error_log('OYIC Secure Login: Registering admin_init hook');
             }
             add_action('admin_init', array($this, 'init_admin'));
-            add_action('admin_init', array($this, 'register_direct_settings'));
+            // DISABLED: Admin Manager now handles all admin functionality
+            // add_action('admin_init', array($this, 'register_direct_settings'));
             
             // DIRECT ADMIN MENU REGISTRATION (bypass Admin Manager for now)
-            add_action('admin_menu', array($this, 'add_direct_admin_menu'));
+            // DISABLED: Admin Manager now handles all admin functionality
+            // add_action('admin_menu', array($this, 'add_direct_admin_menu'));
             
             // Handle settings updates
             add_action('update_option_oyic_secure_login_options', array($this, 'handle_settings_update'), 10, 2);
             
             // Handle AJAX requests
-            add_action('wp_ajax_oyic_generate_key', array($this, 'generate_override_key_ajax'));
+            // AJAX handlers are now handled by Admin Manager
+        // add_action('wp_ajax_oyic_generate_key', array($this, 'generate_override_key_ajax'));
         }
         
         // Load plugin options
@@ -231,6 +234,11 @@ final class OYIC_Secure_Login {
             // Initialize authentication system
             $this->components['auth'] = new \OYIC\SecureLogin\Auth\Manager($this->options);
             
+            // Initialize admin interface
+            if (is_admin()) {
+                $this->components['admin'] = new \OYIC\SecureLogin\Admin\Manager($this->options);
+            }
+            
             // Initialize frontend features
             if (!is_admin()) {
                 $this->components['frontend'] = new \OYIC\SecureLogin\Frontend\Manager($this->options);
@@ -277,31 +285,10 @@ final class OYIC_Secure_Login {
      * @return void
      */
     public function init_admin() {
-        // Prevent multiple initializations
-        if (isset($this->components['admin'])) {
-            return;
-        }
-        
-        // Debug: Log admin initialization
+        // Admin Manager is now initialized in init_plugin()
+        // This method is kept for backward compatibility
         if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('OYIC Secure Login: Initializing admin manager');
-        }
-        
-        try {
-            $this->components['admin'] = new \OYIC\SecureLogin\Admin\Manager($this->options);
-            
-            // Debug: Log admin manager created
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('OYIC Secure Login: Admin manager created successfully');
-            }
-        } catch (Exception $e) {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('OYIC Secure Login: Failed to create admin manager - ' . $e->getMessage());
-            }
-        } catch (Error $e) {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('OYIC Secure Login: Fatal error creating admin manager - ' . $e->getMessage());
-            }
+            error_log('OYIC Secure Login: init_admin() called - Admin Manager should already be initialized');
         }
     }
 
@@ -1182,7 +1169,12 @@ final class OYIC_Secure_Login {
             echo '<form method="post">
                 <div class="form-group">
                     <label for="otp_code">Enter OTP Code:</label>
-                    <input type="text" name="otp_code" id="otp_code" maxlength="6" required>
+                    <div class="otp-input-container" style="position: relative; display: flex; align-items: center;">
+                        <input type="password" name="otp_code" id="otp_code" maxlength="6" required style="flex: 1; padding-right: 45px; font-family: \'Courier New\', monospace; font-size: 18px; letter-spacing: 2px; text-align: center; font-weight: 600; background: #f8f9fa; border: 2px solid #e1e5e9; border-radius: 8px; padding: 12px 45px 12px 12px;">
+                        <button type="button" class="otp-toggle-visibility" id="otp-toggle-btn" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; padding: 8px; cursor: pointer; color: #666; border-radius: 4px; display: flex; align-items: center; justify-content: center;" title="Show OTP code">
+                            <span style="font-size: 16px; width: 16px; height: 16px; display: inline-block;">👁</span>
+                        </button>
+                    </div>
                 </div>
                 <input type="hidden" name="username" value="' . esc_attr($username) . '">
                 <input type="hidden" name="action" value="verify_otp">
@@ -1191,7 +1183,29 @@ final class OYIC_Secure_Login {
             <div class="back-link">
                 <a href="' . remove_query_arg('mode') . '">← Back to Regular Login</a> | 
                 <a href="' . $_SERVER['REQUEST_URI'] . '">← Request new code</a>
-            </div>';
+            </div>
+            <script>
+                document.getElementById("otp-toggle-btn").addEventListener("click", function() {
+                    const otpInput = document.getElementById("otp_code");
+                    const toggleBtn = this;
+                    const icon = toggleBtn.querySelector("span");
+                    
+                    if (otpInput.type === "password") {
+                        otpInput.type = "text";
+                        icon.textContent = "🙈";
+                        toggleBtn.title = "Hide OTP code";
+                    } else {
+                        otpInput.type = "password";
+                        icon.textContent = "👁";
+                        toggleBtn.title = "Show OTP code";
+                    }
+                });
+                
+                // Auto-format OTP input to only allow numbers
+                document.getElementById("otp_code").addEventListener("input", function() {
+                    this.value = this.value.replace(/[^0-9]/g, "");
+                });
+            </script>';
         }
         
         echo '</div>
@@ -1318,32 +1332,11 @@ final class OYIC_Secure_Login {
      * 
      * @since 1.0.0
      * @return void
+     * @deprecated This method is now handled by Admin Manager
      */
     public function generate_override_key_ajax() {
-        // Check permissions and nonce
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(__('Insufficient permissions.', 'oyic-secure-login'));
-        }
-        
-        if (!wp_verify_nonce($_POST['nonce'], 'oyic_secure_login_admin')) {
-            wp_send_json_error(__('Invalid nonce.', 'oyic-secure-login'));
-        }
-        
-        // Generate new key
-        $new_key = wp_generate_password(32, false);
-        
-        // Update options
-        $options = get_option('oyic_secure_login_options', array());
-        $options['override_key'] = $new_key;
-        update_option('oyic_secure_login_options', $options);
-        
-        // Return new key and emergency URL
-        $emergency_url = wp_login_url() . '?override=' . $new_key;
-        
-        wp_send_json_success(array(
-            'key' => $new_key,
-            'emergency_url' => $emergency_url
-        ));
+        // This method is deprecated - functionality moved to Admin Manager
+        wp_send_json_error(__('This method is deprecated. Please use the Admin Manager.', 'oyic-secure-login'));
     }
 
     /**

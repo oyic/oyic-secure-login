@@ -20,6 +20,12 @@
         // Handle generate key functionality
         $('.generate-key-button').on('click', handleGenerateKey);
         
+        // Handle copy key functionality
+        $('.copy-key-button').on('click', handleCopyKey);
+        
+        // Handle copy URL functionality
+        $('.copy-url-button').on('click', handleCopyUrl);
+        
         // Handle settings form validation
         $('form[action="options.php"]').on('submit', validateSettingsForm);
         
@@ -134,7 +140,13 @@
                 if (response.success && response.data.key) {
                     keyInput.val(response.data.key);
                     updateOverrideUrlPreview();
-                    showAdminNotice('New override key generated successfully.', 'success');
+                    
+                    let message = response.data.message || 'New override key generated and saved successfully.';
+                    if (response.data.emergency_url) {
+                        message += '<br><strong>New Emergency URL:</strong> <code>' + response.data.emergency_url + '</code>';
+                    }
+                    
+                    showAdminNotice(message, 'success');
                 } else {
                     showAdminNotice('Failed to generate new key.', 'error');
                 }
@@ -146,6 +158,83 @@
                 button.prop('disabled', false).text(originalText);
             }
         });
+    }
+    
+    function handleCopyKey(e) {
+        e.preventDefault();
+        
+        const keyInput = $('input[name="oyic_secure_login_options[override_key]"]');
+        const key = keyInput.val();
+        
+        if (key) {
+            copyToClipboard(key, 'Override key copied to clipboard!');
+        } else {
+            showAdminNotice('No key to copy.', 'error');
+        }
+    }
+    
+    function handleCopyUrl(e) {
+        e.preventDefault();
+        
+        const urlInput = $('.emergency-url-field');
+        const url = urlInput.val();
+        
+        if (url) {
+            copyToClipboard(url, 'Emergency URL copied to clipboard!');
+        } else {
+            showAdminNotice('No URL to copy.', 'error');
+        }
+    }
+    
+    function copyToClipboard(text, successMessage) {
+        // Try using the modern Clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(function() {
+                showAdminNotice(successMessage, 'success');
+                showCopyFeedback();
+            }).catch(function() {
+                // Fallback to the old method
+                fallbackCopyToClipboard(text, successMessage);
+            });
+        } else {
+            // Fallback for older browsers or non-secure contexts
+            fallbackCopyToClipboard(text, successMessage);
+        }
+    }
+    
+    function showCopyFeedback() {
+        // Add visual feedback to copy buttons
+        $('.copy-key-button, .copy-url-button').addClass('copied');
+        
+        // Remove the copied class after 2 seconds
+        setTimeout(function() {
+            $('.copy-key-button, .copy-url-button').removeClass('copied');
+        }, 2000);
+    }
+    
+    function fallbackCopyToClipboard(text, successMessage) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showAdminNotice(successMessage, 'success');
+                showCopyFeedback();
+            } else {
+                showAdminNotice('Failed to copy to clipboard.', 'error');
+            }
+        } catch (err) {
+            showAdminNotice('Failed to copy to clipboard.', 'error');
+        }
+        
+        document.body.removeChild(textArea);
     }
     
     function validateSettingsForm(e) {
@@ -214,7 +303,9 @@
         const baseUrl = window.location.origin + window.location.pathname.replace('/wp-admin/options-general.php', '/wp-login.php');
         const overrideUrl = baseUrl + '?override=' + key;
         
+        // Update both the preview and the input field
         $('.override-url-preview').text(overrideUrl);
+        $('.emergency-url-field').val(overrideUrl);
     }
     
     function toggleOverrideKeyVisibility() {
@@ -345,7 +436,7 @@
         return emailRegex.test(email);
     }
     
-    // Global functions for inline onclick handlers
+    // Global functions for inline onclick handlers (legacy support)
     window.generateOverrideKey = function() {
         $('.generate-key-button').click();
     };

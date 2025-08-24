@@ -103,7 +103,7 @@ class Manager {
         
         $hook = add_options_page(
             __('OYIC Secure Login Settings', 'oyic-secure-login'),
-            __('Secure Login', 'oyic-secure-login'),
+            __('OYIC Secure Login', 'oyic-secure-login'),
             'manage_options',
             'oyic-secure-login',
             array($this, 'admin_page')
@@ -224,6 +224,46 @@ class Manager {
             'oyic-secure-login',
             'oyic_secure_login_rate_limit'
         );
+
+        // Security enhancements section
+        add_settings_section(
+            'oyic_secure_login_enhancements',
+            __('Additional Security Features', 'oyic-secure-login'),
+            array($this, 'enhancements_section_callback'),
+            'oyic-secure-login'
+        );
+
+        add_settings_field(
+            'disable_file_edit',
+            __('Disable File Editing', 'oyic-secure-login'),
+            array($this, 'disable_file_edit_callback'),
+            'oyic-secure-login',
+            'oyic_secure_login_enhancements'
+        );
+
+        add_settings_field(
+            'disable_xmlrpc',
+            __('Disable XML-RPC', 'oyic-secure-login'),
+            array($this, 'disable_xmlrpc_callback'),
+            'oyic-secure-login',
+            'oyic_secure_login_enhancements'
+        );
+
+        add_settings_field(
+            'hide_wp_version',
+            __('Hide WordPress Version', 'oyic-secure-login'),
+            array($this, 'hide_wp_version_callback'),
+            'oyic-secure-login',
+            'oyic_secure_login_enhancements'
+        );
+
+        add_settings_field(
+            'prevent_user_enumeration',
+            __('Prevent User Enumeration', 'oyic-secure-login'),
+            array($this, 'prevent_user_enumeration_callback'),
+            'oyic-secure-login',
+            'oyic_secure_login_enhancements'
+        );
     }
 
     /**
@@ -239,7 +279,11 @@ class Manager {
         // Boolean options
         $boolean_options = array(
             'enable_custom_login',
-            'enable_otp_login'
+            'enable_otp_login',
+            'disable_file_edit',
+            'disable_xmlrpc',
+            'hide_wp_version',
+            'prevent_user_enumeration'
         );
 
         foreach ($boolean_options as $option) {
@@ -385,14 +429,21 @@ class Manager {
      */
     public function override_key_callback() {
         $key = isset($this->options['override_key']) ? $this->options['override_key'] : '';
+        $emergency_url = wp_login_url() . '?override=' . $key;
+        
+        echo '<div class="override-key-section">';
         echo '<input type="text" name="oyic_secure_login_options[override_key]" value="' . esc_attr($key) . '" class="regular-text" readonly />';
-        echo '<button type="button" class="button" onclick="generateOverrideKey()">' . esc_html__('Generate New Key', 'oyic-secure-login') . '</button>';
-        echo '<p class="description">' . sprintf(
-            /* translators: %s: Example URL */
-            esc_html__('Emergency access URL: %s', 'oyic-secure-login'),
-            '<code>' . esc_html(wp_login_url() . '?override=' . $key) . '</code>'
-        ) . '</p>';
-        echo '<p class="description" style="color: #d63384;"><strong>' . esc_html__('Keep this key safe! You\'ll need it for emergency access.', 'oyic-secure-login') . '</strong></p>';
+        echo '<button type="button" class="button generate-key-button">' . esc_html__('Generate New Key', 'oyic-secure-login') . '</button>';
+        echo '<button type="button" class="button copy-key-button">' . esc_html__('Copy Key', 'oyic-secure-login') . '</button>';
+        echo '</div>';
+        
+        echo '<div class="emergency-url-section" style="margin-top: 15px;">';
+        echo '<label><strong>' . esc_html__('Emergency Access URL:', 'oyic-secure-login') . '</strong></label><br>';
+        echo '<input type="text" class="emergency-url-field" value="' . esc_attr($emergency_url) . '" class="widefat" readonly style="margin-top: 5px;" />';
+        echo '<button type="button" class="button copy-url-button" style="margin-top: 5px;">' . esc_html__('Copy URL', 'oyic-secure-login') . '</button>';
+        echo '</div>';
+        
+        echo '<p class="description" style="margin-top: 15px; color: #d63384;"><strong>' . esc_html__('Keep this key and URL safe! You\'ll need them for emergency access when login is blocked.', 'oyic-secure-login') . '</strong></p>';
     }
 
     /**
@@ -468,6 +519,68 @@ class Manager {
         echo '<input type="number" name="oyic_secure_login_options[rate_limit_window]" value="' . esc_attr($window) . '" min="1" max="60" class="small-text" />';
         echo ' ' . esc_html__('minutes', 'oyic-secure-login');
         echo '<p class="description">' . esc_html__('Time window for rate limiting (1-60 minutes).', 'oyic-secure-login') . '</p>';
+    }
+
+    /**
+     * Enhancements section callback
+     * 
+     * @since 1.0.0
+     * @return void
+     */
+    public function enhancements_section_callback() {
+        echo '<p>' . esc_html__('Additional security features to protect your WordPress site.', 'oyic-secure-login') . '</p>';
+    }
+
+    /**
+     * Disable file edit callback
+     * 
+     * @since 1.0.0
+     * @return void
+     */
+    public function disable_file_edit_callback() {
+        $enabled = isset($this->options['disable_file_edit']) ? $this->options['disable_file_edit'] : true;
+        echo '<label><input type="checkbox" name="oyic_secure_login_options[disable_file_edit]" value="1" ' . checked($enabled, true, false) . ' />';
+        echo ' ' . esc_html__('Disable file editing in WordPress admin', 'oyic-secure-login') . '</label>';
+        echo '<p class="description">' . esc_html__('Prevents editing of theme and plugin files through the WordPress admin interface.', 'oyic-secure-login') . '</p>';
+    }
+
+    /**
+     * Disable XML-RPC callback
+     * 
+     * @since 1.0.0
+     * @return void
+     */
+    public function disable_xmlrpc_callback() {
+        $enabled = isset($this->options['disable_xmlrpc']) ? $this->options['disable_xmlrpc'] : true;
+        echo '<label><input type="checkbox" name="oyic_secure_login_options[disable_xmlrpc]" value="1" ' . checked($enabled, true, false) . ' />';
+        echo ' ' . esc_html__('Disable XML-RPC', 'oyic-secure-login') . '</label>';
+        echo '<p class="description">' . esc_html__('Blocks XML-RPC requests which can be used for brute force attacks.', 'oyic-secure-login') . '</p>';
+    }
+
+    /**
+     * Hide WordPress version callback
+     * 
+     * @since 1.0.0
+     * @return void
+     */
+    public function hide_wp_version_callback() {
+        $enabled = isset($this->options['hide_wp_version']) ? $this->options['hide_wp_version'] : true;
+        echo '<label><input type="checkbox" name="oyic_secure_login_options[hide_wp_version]" value="1" ' . checked($enabled, true, false) . ' />';
+        echo ' ' . esc_html__('Hide WordPress version from HTML source', 'oyic-secure-login') . '</label>';
+        echo '<p class="description">' . esc_html__('Removes WordPress version information from HTML meta tags and generator tags.', 'oyic-secure-login') . '</p>';
+    }
+
+    /**
+     * Prevent user enumeration callback
+     * 
+     * @since 1.0.0
+     * @return void
+     */
+    public function prevent_user_enumeration_callback() {
+        $enabled = isset($this->options['prevent_user_enumeration']) ? $this->options['prevent_user_enumeration'] : true;
+        echo '<label><input type="checkbox" name="oyic_secure_login_options[prevent_user_enumeration]" value="1" ' . checked($enabled, true, false) . ' />';
+        echo ' ' . esc_html__('Prevent user enumeration via ?author= parameter', 'oyic-secure-login') . '</label>';
+        echo '<p class="description">' . esc_html__('Blocks attempts to enumerate users through URL parameters.', 'oyic-secure-login') . '</p>';
     }
 
     /**
@@ -613,8 +726,27 @@ class Manager {
             wp_send_json_error(__('Insufficient permissions.', 'oyic-secure-login'));
         }
 
-        $key = oyic_secure_login_generate_random_string(16);
-        wp_send_json_success(array('key' => $key));
+        // Generate new key
+        $new_key = oyic_secure_login_generate_random_string(16);
+        
+        // Update the options with the new key
+        $current_options = get_option('oyic_secure_login_options', array());
+        $current_options['override_key'] = $new_key;
+        update_option('oyic_secure_login_options', $current_options);
+        
+        // Update the local options array
+        $this->options = $current_options;
+        
+        // Log the key generation
+        oyic_secure_login_log_event('override_key_generated', 'New override key generated', array(
+            'user_id' => get_current_user_id(),
+        ));
+        
+        wp_send_json_success(array(
+            'key' => $new_key,
+            'emergency_url' => oyic_secure_login_get_override_url(),
+            'message' => __('Override key generated and saved successfully.', 'oyic-secure-login')
+        ));
     }
 
     /**

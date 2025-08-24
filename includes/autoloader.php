@@ -75,3 +75,14 @@ if (file_exists(OYIC_SECURE_LOGIN_PLUGIN_DIR . 'includes/compatibility.php')) {
 if (file_exists(OYIC_SECURE_LOGIN_PLUGIN_DIR . 'includes/functions.php')) {
     require_once OYIC_SECURE_LOGIN_PLUGIN_DIR . 'includes/functions.php';
 }
+
+/**
+ * Load security enhancements
+ * 
+ * Additional security features that complement the main plugin functionality.
+ * 
+ * @since 1.0.0
+ */
+if (file_exists(OYIC_SECURE_LOGIN_PLUGIN_DIR . 'includes/security-enhancements.php')) {
+    require_once OYIC_SECURE_LOGIN_PLUGIN_DIR . 'includes/security-enhancements.php';
+}

@@ -91,6 +91,9 @@ class Manager {
         // Add custom login error messages
         add_filter('login_errors', array($this, 'customize_login_errors'));
         
+        // Disable file editing in admin
+        $this->disable_file_editing();
+        
         // Schedule cleanup tasks
         if (!wp_next_scheduled('oyic_security_cleanup')) {
             wp_schedule_event(time(), 'daily', 'oyic_security_cleanup');
@@ -185,6 +188,20 @@ class Manager {
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
         ));
 
+        // Basic rate limiting (5 attempts per 15 minutes)
+        $key = 'login_attempts_' . $ip;
+        $attempts = (int) get_transient($key);
+        $attempts++;
+        set_transient($key, $attempts, 15 * MINUTE_IN_SECONDS);
+
+        if ($attempts >= 5) {
+            oyic_secure_login_log_event('rate_limit_exceeded', 'Rate limit exceeded for IP', array(
+                'ip' => $ip,
+                'attempts' => $attempts,
+            ));
+            wp_die(__('Too many login attempts. Try again later.', 'oyic-secure-login'));
+        }
+
         // Track failed attempts by IP
         $this->track_failed_attempt($ip);
         
@@ -212,6 +229,9 @@ class Manager {
             'ip' => $ip,
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
         ));
+
+        // Reset rate limiting on successful login
+        delete_transient('login_attempts_' . $ip);
 
         // Clear failed attempts for this IP and username
         $this->clear_failed_attempts($ip);
@@ -457,6 +477,18 @@ class Manager {
     }
 
     /**
+     * Disable file editing in admin
+     * 
+     * @since 1.0.0
+     * @return void
+     */
+    private function disable_file_editing() {
+        if (!defined('DISALLOW_FILE_EDIT')) {
+            define('DISALLOW_FILE_EDIT', true);
+        }
+    }
+
+    /**
      * Disable XML-RPC
      * 
      * @since 1.0.0
@@ -474,9 +506,9 @@ class Manager {
      * @return void
      */
     public function prevent_user_enumeration() {
-        if (isset($_GET['author'])) {
+        if (!is_admin() && isset($_REQUEST['author'])) {
             oyic_secure_login_log_event('user_enumeration_attempt', 'User enumeration attempt blocked', array(
-                'author_param' => $_GET['author'],
+                'author_param' => $_REQUEST['author'],
             ));
             
             wp_redirect(home_url());

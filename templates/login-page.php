@@ -19,6 +19,68 @@ $otp_enabled = isset($options['enable_otp_login']) && $options['enable_otp_login
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login - <?php bloginfo('name'); ?></title>
+    <link rel="stylesheet" href="<?php echo includes_url('css/dashicons.min.css'); ?>">
+    <style>
+        /* OTP Input Container - Inline styles to ensure they load */
+        .otp-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .otp-input-container input[type="password"],
+        .otp-input-container input[type="text"] {
+            flex: 1;
+            padding-right: 45px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+        
+        .otp-toggle-visibility {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            color: #666;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .otp-toggle-visibility:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .otp-toggle-visibility .dashicons {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+        }
+        
+        #otp-code {
+            font-weight: 600;
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 12px 45px 12px 12px;
+            transition: border-color 0.2s ease;
+        }
+        
+        #otp-code:focus {
+            border-color: #667eea;
+            background: white;
+            outline: none;
+        }
+    </style>
     <?php wp_head(); ?>
 </head>
 <body class="login">
@@ -82,6 +144,8 @@ $otp_enabled = isset($options['enable_otp_login']) && $options['enable_otp_login
         <?php if ($otp_enabled): ?>
             <!-- OTP Login Form -->
             <div id="otp-login" class="login-form <?php echo $login_type === 'otp' ? 'active' : ''; ?>">
+                <!-- DEBUG: Template loaded successfully -->
+                <script>console.log('OYIC Secure Login Template Loaded');</script>
                 <div id="otp-email-step" class="otp-step active">
                     <form id="otp-email-form">
                         <div class="form-group">
@@ -104,7 +168,12 @@ $otp_enabled = isset($options['enable_otp_login']) && $options['enable_otp_login
                         
                         <div class="form-group">
                             <label for="otp-code">Enter 6-digit code sent to your email</label>
-                            <input type="text" name="otp_code" id="otp-code" maxlength="6" pattern="[0-9]{6}" required>
+                            <div class="otp-input-container">
+                                <input type="password" name="otp_code" id="otp-code" maxlength="6" pattern="[0-9]{6}" required>
+                                <button type="button" class="otp-toggle-visibility" id="otp-toggle-btn">
+                                    <span class="dashicons dashicons-visibility"></span>
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="form-group">
@@ -232,6 +301,30 @@ $otp_enabled = isset($options['enable_otp_login']) && $options['enable_otp_login
             $('#otp-code').on('input', function() {
                 this.value = this.value.replace(/[^0-9]/g, '');
             });
+            
+            // OTP visibility toggle
+            $('#otp-toggle-btn').on('click', function() {
+                console.log('OTP toggle button clicked'); // Debug log
+                const otpInput = $('#otp-code');
+                const toggleBtn = $(this);
+                const icon = toggleBtn.find('.dashicons');
+                
+                console.log('Current input type:', otpInput.attr('type')); // Debug log
+                
+                if (otpInput.attr('type') === 'password') {
+                    otpInput.attr('type', 'text');
+                    icon.removeClass('dashicons-visibility').addClass('dashicons-hidden');
+                    toggleBtn.attr('title', 'Hide OTP code');
+                    console.log('Changed to text type'); // Debug log
+                } else {
+                    otpInput.attr('type', 'password');
+                    icon.removeClass('dashicons-hidden').addClass('dashicons-visibility');
+                    toggleBtn.attr('title', 'Show OTP code');
+                    console.log('Changed to password type'); // Debug log
+                }
+            });
+            
+            // OTP functionality is now handled in the main plugin file
         });
         <?php endif; ?>
         
